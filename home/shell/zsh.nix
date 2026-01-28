@@ -1,4 +1,4 @@
-{ ... }:
+{ config, ... }:
 
 {
   programs.zsh = {
@@ -7,6 +7,7 @@
     enableCompletion = true;
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
+    dotDir = config.home.homeDirectory;
 
     # Prezto configuration
     prezto = {
@@ -63,7 +64,7 @@
     };
 
     # Additional initialization
-    initExtra = ''
+    initContent = ''
       # mise activation
       if command -v mise &> /dev/null; then
         eval "$(mise activate zsh)"

@@ -4,6 +4,11 @@
   homebrew = {
     enable = true;
 
+    taps = [
+      "homebrew/core"
+      "homebrew/cask"
+    ];
+
     onActivation = {
       cleanup = "zap"; # Uninstall all packages not listed below
       autoUpdate = true;
@@ -15,7 +20,6 @@
       "blender"
       "cursor"
       "discord"
-      "google-cloud-sdk"
       "jetbrains-toolbox"
       "mactex-no-gui"
       "notion"

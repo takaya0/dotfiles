@@ -5,11 +5,11 @@
     ./homebrew.nix
   ];
 
-  # Enable experimental features
-  nix.settings.experimental-features = "nix-command flakes";
+  # Determinate Nix manages the daemon; disable nix-darwin management
+  nix.enable = false;
 
-  # Auto upgrade nix package and the daemon service
-  services.nix-daemon.enable = true;
+  # Primary user for system-activated settings
+  system.primaryUser = "yataka";
 
   # macOS system settings
   system = {
@@ -17,7 +17,7 @@
 
     defaults = {
       dock = {
-        autohide = true;
+        autohide = false;
         show-recents = false;
         mru-spaces = false;
       };

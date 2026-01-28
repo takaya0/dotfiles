@@ -4,10 +4,12 @@
   programs.git = {
     enable = true;
 
-    userName = "yataka";
-    userEmail = "ytk.koizumi@gmail.com";
+    settings = {
+      user = {
+        name = "yataka";
+        email = "ytk.koizumi@gmail.com";
+      };
 
-    extraConfig = {
       init = {
         defaultBranch = "main";
       };
@@ -24,14 +26,14 @@
       color = {
         ui = "auto";
       };
-    };
 
-    aliases = {
-      st = "status";
-      co = "checkout";
-      br = "branch";
-      ci = "commit";
-      lg = "log --graph --oneline --all --decorate";
+      alias = {
+        st = "status";
+        co = "checkout";
+        br = "branch";
+        ci = "commit";
+        lg = "log --graph --oneline --all --decorate";
+      };
     };
   };
 }

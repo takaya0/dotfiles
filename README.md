@@ -21,6 +21,7 @@ dotfiles/
 │   ├── default.nix        # ユーザー環境
 │   ├── git.nix            # Git設定
 │   ├── packages.nix       # CLIツール
+│   ├── vscode.nix         # VS Code拡張機能
 │   └── shell/
 │       └── zsh.nix        # zsh + prezto設定
 ├── config/                # 設定ファイル
@@ -28,6 +29,7 @@ dotfiles/
 │   ├── zed/               # Zed設定
 │   ├── karabiner/         # Karabiner設定
 │   ├── mise/              # mise設定
+│   ├── vscode/            # VS Code設定
 │   └── claude/            # Claude Code設定
 └── scripts/
     └── bootstrap.sh       # 初回セットアップ
@@ -58,11 +60,11 @@ exec zsh
 
 ```bash
 # dotfilesを編集後
-darwin-rebuild switch --flake ~/dotfiles
+sudo darwin-rebuild switch --flake ~/dotfiles
 
 # flake.lockを更新
 nix flake update
-darwin-rebuild switch --flake ~/dotfiles
+sudo darwin-rebuild switch --flake ~/dotfiles
 ```
 
 ## 📦 パッケージ管理方針
@@ -82,6 +84,7 @@ darwin-rebuild switch --flake ~/dotfiles
 - **Zed**: `config/zed/settings.json`
 - **Karabiner**: `config/karabiner/karabiner.json`
 - **mise**: `config/mise/config.toml`
+- **VS Code**: `config/vscode/settings.json`
 - **Claude Code**: `config/claude/`
 
 ## 📝 トラブルシューティング
@@ -98,7 +101,7 @@ ls -la ~/.config/wezterm
 ls -la ~/.claude
 
 # 再適用
-darwin-rebuild switch --flake ~/dotfiles
+sudo darwin-rebuild switch --flake ~/dotfiles
 ```
 
 ## 🔗 参考リンク

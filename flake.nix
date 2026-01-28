@@ -41,6 +41,7 @@
             enable = true;
             enableRosetta = true;
             user = "yataka";
+            autoMigrate = true;
 
             taps = {
               "homebrew/homebrew-core" = homebrew-core;
@@ -56,6 +57,7 @@
           home-manager = {
             useGlobalPkgs = true;
             useUserPackages = true;
+            backupFileExtension = "before-hm";
             users.yataka = import ./home;
           };
         }
