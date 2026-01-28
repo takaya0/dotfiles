@@ -1,0 +1,8 @@
+{
+  "tabnine.experimentalAutoImports": true,
+  "files.autoSave": "onFocusChange",
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "editor.copyWithSyntaxHighlighting": false,
+  "hediet.vscode-drawio.resizeImages": null,
+  "claudeCode.preferredLocation": "panel"
+}
