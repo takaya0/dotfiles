@@ -1,0 +1,14 @@
+{
+  "tabnine.experimentalAutoImports": true,
+  "files.autoSave": "onFocusChange",
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "editor.copyWithSyntaxHighlighting": false,
+  "hediet.vscode-drawio.resizeImages": null,
+  "claudeCode.preferredLocation": "panel",
+  "workbench.colorTheme": "Cursor Dark Midnight",
+  "workbench.editor.customLabels.patterns": {
+    "\"**/src/app/**/page.tsx\"": "\"${dirname}/page.tsx\"",
+    "\"**/src/app/**/layout.tsx\"": "\"${dirname}/layout.tsx\""
+  },
+  "python.defaultInterpreterPath": "/opt/homebrew/bin/python3"
+}

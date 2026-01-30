@@ -19,6 +19,7 @@
       ".claude/rules".source = ../config/claude/rules;
       ".claude/commands".source = ../config/claude/commands;
       "Library/Application Support/Code/User/settings.json".source = ../config/vscode/settings.json;
+      "Library/Application Support/Cursor/User/settings.json".source = ../config/cursor/settings.json;
     };
   };
 
