@@ -48,7 +48,7 @@
               "homebrew/homebrew-cask" = homebrew-cask;
             };
 
-            mutableTaps = false;
+            mutableTaps = true;
           };
         }
 
