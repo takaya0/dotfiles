@@ -1,111 +1,109 @@
 # dotfiles
 
-macOS環境をNix + nix-darwin + Home Managerで宣言的に管理するdotfilesリポジトリ。
+macOS環境を chezmoi + Homebrew で管理するdotfilesリポジトリ。
 
 ## 🎯 特徴
 
-- **nix-darwin**: macOSシステム設定を宣言的に管理
-- **Home Manager**: ユーザー環境とdotfilesを管理
-- **Homebrew統合**: GUI アプリケーションは Homebrew Cask で管理
+- **chezmoi**: dotfilesの管理・適用を担当
+- **Homebrew**: CLIツール・GUIアプリをすべて管理
 - **mise**: 言語ランタイムのバージョン管理
+- **Prezto**: zshフレームワーク（chezmoi external git-repoとして管理）
 
 ## 📁 構成
 
 ```
-dotfiles/
-├── flake.nix              # Nixエントリポイント
-├── darwin/                # nix-darwin設定
-│   ├── default.nix        # システム設定
-│   └── homebrew.nix       # Homebrew管理
-├── home/                  # Home Manager設定
-│   ├── default.nix        # ユーザー環境
-│   ├── git.nix            # Git設定
-│   ├── packages.nix       # CLIツール
-│   ├── vscode.nix         # VS Code拡張機能
-│   └── shell/
-│       └── zsh.nix        # zsh + prezto設定
-├── config/                # 設定ファイル
-│   ├── wezterm/           # WezTerm設定
-│   ├── zed/               # Zed設定
-│   ├── karabiner/         # Karabiner設定
-│   ├── mise/              # mise設定
-│   ├── vscode/            # VS Code設定
-│   └── claude/            # Claude Code設定
-└── scripts/
-    └── bootstrap.sh       # 初回セットアップ
+dotfiles/                                    # chezmoi source directory
+├── .chezmoi.toml.tmpl                       # chezmoi設定テンプレート
+├── .chezmoidata.yaml                        # パッケージ・拡張機能リスト
+├── .chezmoiexternal.toml                    # Prezto (外部git-repo)
+├── .chezmoiignore                           # chezmoi非管理ファイル
+│
+├── dot_gitconfig.tmpl                       # → ~/.gitconfig
+├── dot_zshrc.tmpl                           # → ~/.zshrc
+├── dot_zprofile.tmpl                        # → ~/.zprofile
+├── dot_zshenv.tmpl                          # → ~/.zshenv
+├── dot_zpreztorc.tmpl                       # → ~/.zpreztorc
+│
+├── dot_config/                              # → ~/.config/
+│   ├── wezterm/                             # WezTerm設定
+│   ├── zed/                                 # Zed設定
+│   ├── karabiner/                           # Karabiner設定
+│   └── mise/                               # mise設定
+│
+├── dot_claude/                              # → ~/.claude/
+│   ├── settings.json
+│   ├── rules/core/                          # ルールファイル
+│   ├── commands/                            # カスタムコマンド
+│   ├── agents/                              # エージェント設定
+│   └── skills/                              # スキルディレクトリ
+│
+├── Library/Application Support/
+│   ├── Code/User/settings.json             # VS Code設定
+│   └── Cursor/User/settings.json           # Cursor設定
+│
+├── run_onchange_install-packages.sh.tmpl    # Homebrew bundle
+├── run_onchange_install-vscode-extensions.sh.tmpl  # VS Code拡張
+├── run_once_after_configure-macos.sh        # macOSデフォルト設定
+└── scripts/bootstrap.sh                     # 初回セットアップ
 ```
 
 ## 🚀 セットアップ
 
-### 1. Nixのインストール
-
-```bash
-curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
-```
-
-### 2. dotfilesのクローンと適用
+### 新規セットアップ
 
 ```bash
 cd ~/dotfiles
 ./scripts/bootstrap.sh
 ```
 
-### 3. シェルの再起動
+### 手動セットアップ
 
 ```bash
-exec zsh
+# Homebrewをインストール
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# chezmoiをインストール
+brew install chezmoi
+
+# chezmoiを初期化して適用
+chezmoi init --source=~/dotfiles
+chezmoi apply
 ```
 
 ## 🔄 設定の更新
 
 ```bash
 # dotfilesを編集後
-sudo darwin-rebuild switch --flake ~/dotfiles
+chezmoi apply
 
-# flake.lockを更新
-nix flake update
-sudo darwin-rebuild switch --flake ~/dotfiles
+# 差分を確認してから適用
+chezmoi diff
+chezmoi apply
 ```
 
 ## 📦 パッケージ管理方針
 
 | カテゴリ | 管理方法 | 設定場所 |
 |---------|---------|----------|
-| CLIツール | Nix | `home/packages.nix` |
-| 言語ランタイム | mise | `config/mise/config.toml` |
-| GUIアプリ | Homebrew Cask | `darwin/homebrew.nix` |
-| macOS固有CLI | Homebrew | `darwin/homebrew.nix` |
+| CLIツール | Homebrew | `.chezmoidata.yaml` |
+| 言語ランタイム | mise | `dot_config/mise/config.toml` |
+| GUIアプリ | Homebrew Cask | `.chezmoidata.yaml` |
+| VS Code拡張 | code CLI | `.chezmoidata.yaml` |
 
 ## 🛠️ 設定ファイルの編集
 
-設定ファイルは `config/` 以下で管理され、Home Managerによって自動的にリンクされます。
+設定ファイルは chezmoi 命名規則に従い管理されています。
 
-- **WezTerm**: `config/wezterm/*.lua`
-- **Zed**: `config/zed/settings.json`
-- **Karabiner**: `config/karabiner/karabiner.json`
-- **mise**: `config/mise/config.toml`
-- **VS Code**: `config/vscode/settings.json`
-- **Claude Code**: `config/claude/`
-
-## 📝 トラブルシューティング
-
-### Homebrewパッケージが自動削除される
-
-`darwin/homebrew.nix` の `onActivation.cleanup = "zap"` により、宣言されていないパッケージは自動削除されます。保持したいパッケージは `casks` または `brews` に追加してください。
-
-### シンボリックリンクが正しく作成されない
-
-```bash
-# リンクの確認
-ls -la ~/.config/wezterm
-ls -la ~/.claude
-
-# 再適用
-sudo darwin-rebuild switch --flake ~/dotfiles
-```
+- **WezTerm**: `dot_config/wezterm/*.lua`
+- **Zed**: `dot_config/zed/settings.json`
+- **Karabiner**: `dot_config/karabiner/karabiner.json`
+- **mise**: `dot_config/mise/config.toml`
+- **VS Code**: `Library/Application Support/Code/User/settings.json`
+- **Claude Code**: `dot_claude/`
 
 ## 🔗 参考リンク
 
-- [nix-darwin](https://github.com/LnL7/nix-darwin)
-- [Home Manager](https://github.com/nix-community/home-manager)
-- [nix-homebrew](https://github.com/zhaofengli-wip/nix-homebrew)
+- [chezmoi](https://www.chezmoi.io/)
+- [Homebrew](https://brew.sh/)
+- [mise](https://mise.jdx.dev/)
+- [Prezto](https://github.com/sorin-ionescu/prezto)

@@ -1,0 +1,24 @@
+# Source Prezto.
+if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
+  source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
+fi
+
+# Shell aliases
+alias ls='ls --color=auto'
+alias ll='ls -lah'
+alias grep='grep --color=auto'
+alias ..='cd ..'
+alias ...='cd ../..'
+
+# mise activation
+if command -v mise &> /dev/null; then
+  eval "$(mise activate zsh)"
+fi
+
+# bun completions
+if [ -s "$HOME/.bun/_bun" ]; then
+  source "$HOME/.bun/_bun"
+fi
+
+# Custom PATH additions
+export PATH="$HOME/.bun/bin:$PATH"

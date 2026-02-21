@@ -1,0 +1,60 @@
+#
+# Prezto configuration file.
+#
+
+# Set the Prezto modules to load (browse modules).
+# The order matters.
+zstyle ':prezto:load' pmodule \
+  'environment' \
+  'terminal' \
+  'editor' \
+  'history' \
+  'directory' \
+  'spectrum' \
+  'utility' \
+  'completion' \
+  'git' \
+  'syntax-highlighting' \
+  'history-substring-search' \
+  'autosuggestions' \
+  'prompt'
+
+# General Settings
+# ----------------
+
+# Set case-sensitivity for completion, history lookup, etc.
+zstyle ':prezto:*:*' case-sensitive 'no'
+
+# Color output (auto set to 'no' on dumb terminals).
+zstyle ':prezto:*:*' color 'yes'
+
+# Editor Settings
+# ---------------
+
+# Set the key mapping style to 'emacs' or 'vi'.
+zstyle ':prezto:module:editor' key-bindings 'vi'
+
+# Enable dot expansion.
+zstyle ':prezto:module:editor' dot-expansion 'yes'
+
+# Prompt Settings
+# ---------------
+
+# Set the prompt theme to load.
+zstyle ':prezto:module:prompt' theme 'pure'
+
+# Syntax Highlighting Settings
+# ----------------------------
+
+# Set syntax highlighters.
+zstyle ':prezto:module:syntax-highlighting' highlighters \
+  'main' \
+  'brackets' \
+  'pattern' \
+  'cursor'
+
+# Utility Settings
+# ----------------
+
+# Disable safe ops (allow rm, mv, cp without confirmation).
+zstyle ':prezto:module:utility' safe-ops 'no'

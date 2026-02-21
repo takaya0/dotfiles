@@ -5,33 +5,29 @@
 - macOS (Apple Silicon)
 - sudo権限
 
-## ステップ1: Nixのインストール
+## ステップ1: Homebrewのインストール
 
 ターミナルを開いて以下のコマンドを実行してください：
 
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-インストール中にパスワードの入力を求められます。
-
-インストールが完了したら、ターミナルを再起動してください：
+インストール後、シェルにHomebrewのパスを追加します：
 
 ```bash
-exec zsh
+eval "$(/opt/homebrew/bin/brew shellenv)"
 ```
 
-## ステップ2: Nixが正しくインストールされたか確認
+## ステップ2: dotfilesのクローン
 
 ```bash
-nix --version
+git clone https://github.com/yataka/dotfiles.git ~/dotfiles
 ```
 
-バージョン情報が表示されれば成功です。
+すでにクローン済みの場合はスキップ。
 
-## ステップ3: nix-darwinの初回適用
-
-dotfilesディレクトリで以下のコマンドを実行してください：
+## ステップ3: chezmoiのインストールと適用
 
 ```bash
 cd ~/dotfiles
@@ -40,8 +36,10 @@ cd ~/dotfiles
 
 このスクリプトは以下の処理を実行します：
 
-1. `nix flake update` - 依存関係のロック
-2. `nix run nix-darwin -- switch --flake .` - nix-darwinの初回ビルドと適用
+1. `chezmoi` をHomebrewでインストール
+2. `chezmoi init --source=~/dotfiles` で初期化
+3. `chezmoi diff` で変更内容を確認
+4. 確認後 `chezmoi apply` で設定を適用（Homebrewパッケージインストール含む）
 
 ## ステップ4: シェルの再起動
 
@@ -55,88 +53,75 @@ exec zsh
 
 以下のコマンドで設定が正しく適用されているか確認できます：
 
-### 1. シンボリックリンクの確認
+### 1. 設定ファイルの確認
 
 ```bash
 ls -la ~/.config/wezterm/
 ls -la ~/.config/zed/
+ls -la ~/.config/karabiner/
+ls -la ~/.config/mise/
 ls -la ~/.claude/
 ```
-
-dotfilesリポジトリへのシンボリックリンクが作成されているはずです。
 
 ### 2. Homebrewパッケージの確認
 
 ```bash
-brew list --cask
+which rg fd bat eza zoxide fzf delta jq yq gh mise
 ```
 
-`darwin/homebrew.nix`で宣言したCaskがインストールされているはずです。
-
-### 3. Nixパッケージの確認
+### 3. Git設定の確認
 
 ```bash
-which rg
-which fd
-which bat
+git config --global user.name
+git config --global user.email
 ```
 
-これらのコマンドが `/nix/store/` 配下を指しているはずです。
-
-### 4. zsh + preztoの確認
+### 4. macOS設定の確認
 
 ```bash
-echo $SHELL
+defaults read com.apple.dock autohide
+defaults read NSGlobalDomain KeyRepeat
 ```
 
-`/run/current-system/sw/bin/zsh` が表示されるはずです。
+## 設定の更新
+
+dotfilesを変更した後は以下を実行：
+
+```bash
+chezmoi apply
+```
+
+変更内容を事前確認したい場合：
+
+```bash
+chezmoi diff
+chezmoi apply
+```
 
 ## トラブルシューティング
 
-### 「darwin-rebuild: command not found」と表示される
-
-パスが正しく設定されていない可能性があります。
+### chezmoi apply が失敗する
 
 ```bash
-# パスを確認
-echo $PATH
+# 詳細ログで実行
+chezmoi apply --verbose
 
-# シェルを再起動
-exec zsh
+# 差分のみ確認
+chezmoi diff
 ```
 
-それでも解決しない場合は、以下のコマンドでパスを手動で追加してください：
+### Homebrewパッケージが足りない
+
+`.chezmoidata.yaml` の `brews` または `casks` にパッケージ名を追加し、再適用：
 
 ```bash
-export PATH="/run/current-system/sw/bin:$PATH"
+chezmoi apply
 ```
 
-### Homebrewパッケージが削除される
+### Preztoが読み込まれない
 
-`darwin/homebrew.nix` の `onActivation.cleanup = "zap"` により、宣言されていないパッケージは自動削除されます。保持したいパッケージは `darwin/homebrew.nix` の `casks` または `brews` に追加してください。
-
-### 設定が反映されない
+chezmoiが `.zprezto` をgit-repoとして取得していない場合：
 
 ```bash
-# 設定を再適用
-darwin-rebuild switch --flake ~/dotfiles
-
-# より詳細なログを表示
-darwin-rebuild switch --flake ~/dotfiles --show-trace
-```
-
-## 次のステップ
-
-設定を変更した場合は、以下のコマンドで反映できます：
-
-```bash
-darwin-rebuild switch --flake ~/dotfiles
-```
-
-依存関係を更新する場合は：
-
-```bash
-cd ~/dotfiles
-nix flake update
-darwin-rebuild switch --flake ~/dotfiles
+chezmoi update
 ```

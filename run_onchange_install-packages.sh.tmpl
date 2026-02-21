@@ -1,0 +1,17 @@
+#!/bin/bash
+# chezmoi:template:left-delimiter="{{" right-delimiter="}}"
+set -euo pipefail
+
+echo "Installing Homebrew packages..."
+
+# Generate Brewfile and run bundle
+brew bundle --no-lock --file=- << 'EOF'
+{{- range .brews }}
+brew "{{ . }}"
+{{- end }}
+{{- range .casks }}
+cask "{{ . }}"
+{{- end }}
+EOF
+
+echo "Homebrew packages installed successfully."
