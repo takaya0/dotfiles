@@ -32,3 +32,23 @@ fn user_repository_find_by_id_returns_user_when_exists() { ... }
 #[test]
 fn calculate_total_returns_zero_when_cart_is_empty() { ... }
 ```
+
+## Dart / Flutter
+
+テスト名は**日本語**で記述する。`group` + `test` パターンを使用：
+
+```dart
+group('TaskDao', () {
+  group('insertTask', () {
+    test('有効なデータの場合にタスクを挿入できる', () async { ... });
+    test('重複IDの場合に例外を投げる', () async { ... });
+  });
+
+  group('findTaskById', () {
+    test('存在するIDの場合にタスクを返す', () async { ... });
+    test('存在しないIDの場合にnullを返す', () async { ... });
+  });
+});
+```
+
+パターン: `'メソッド名 で条件の場合に期待結果'` または `'条件の場合に期待結果'`
