@@ -9,7 +9,6 @@ brews:
   - jq
   - yq
   - gh
-  - mise
   - htop
   - tree
   - wget

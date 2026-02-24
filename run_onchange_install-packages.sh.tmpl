@@ -15,3 +15,12 @@ cask "{{ . }}"
 EOF
 
 echo "Homebrew packages installed successfully."
+
+# Install mise via curl
+if ! command -v mise &>/dev/null; then
+  echo "Installing mise..."
+  curl https://mise.run | sh
+  echo "mise installed successfully."
+else
+  echo "mise is already installed."
+fi
