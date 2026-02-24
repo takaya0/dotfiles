@@ -24,3 +24,21 @@ if ! command -v mise &>/dev/null; then
 else
   echo "mise is already installed."
 fi
+
+# Install Claude Code via native installer
+if ! command -v claude &>/dev/null; then
+  echo "Installing Claude Code..."
+  curl -fsSL https://claude.ai/install.sh | bash
+  echo "Claude Code installed successfully."
+else
+  echo "Claude Code is already installed."
+fi
+
+# Install Codex CLI via bun
+if command -v bun &>/dev/null; then
+  echo "Installing Codex CLI..."
+  bun add -g @openai/codex
+  echo "Codex CLI installed successfully."
+else
+  echo "bun not found, skipping Codex CLI installation."
+fi
