@@ -26,6 +26,7 @@ casks:
   - cursor
   - discord
   - jetbrains-toolbox
+  - karabiner-elements
   - mactex-no-gui
   - notion
   - raycast
