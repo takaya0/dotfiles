@@ -5,97 +5,72 @@
 - macOS (Apple Silicon)
 - sudo権限
 
-## ステップ1: Homebrewのインストール
+## ワンライナーセットアップ（新規マシン）
 
-ターミナルを開いて以下のコマンドを実行してください：
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-インストール後、シェルにHomebrewのパスを追加します：
+ターミナルを開いて以下を実行するだけです:
 
 ```bash
-eval "$(/opt/homebrew/bin/brew shellenv)"
+bash <(curl -fsSL https://raw.githubusercontent.com/takaya0/dotfiles/main/scripts/bootstrap.sh)
 ```
 
-## ステップ2: dotfilesのクローン
+以下が自動で実行されます:
+1. Xcode Command Line Tools のインストール
+2. Homebrew のインストール
+3. dotfiles リポジトリを `~/dotfiles` にクローン
+4. chezmoi のインストール
+5. 適用予定の変更を表示 → 確認後 `chezmoi apply` を実行
+
+### chezmoi apply で自動インストールされるもの
+
+- Homebrew パッケージ（CLI ツール）・Cask（GUI アプリ）
+- mise（言語ランタイムマネージャ）と全ランタイム（bun, node, python, ruby 等）
+- Claude Code
+- Codex CLI（bun 経由）
+- VS Code / Cursor 拡張機能
+- macOS デフォルト設定（初回のみ）
+- Prezto（zsh フレームワーク）
+
+## clone 済みの場合
 
 ```bash
-git clone https://github.com/yataka/dotfiles.git ~/dotfiles
+~/dotfiles/scripts/bootstrap.sh
 ```
 
-すでにクローン済みの場合はスキップ。
+## インストール後
 
-## ステップ3: chezmoiのインストールと適用
-
-```bash
-cd ~/dotfiles
-./scripts/bootstrap.sh
-```
-
-このスクリプトは以下の処理を実行します：
-
-1. `chezmoi` をHomebrewでインストール
-2. `chezmoi init --source=~/dotfiles` で初期化
-3. `chezmoi diff` で変更内容を確認
-4. 確認後 `chezmoi apply` で設定を適用（Homebrewパッケージインストール含む）
-
-## ステップ4: シェルの再起動
-
-設定を反映するため、ターミナルを再起動してください：
+ターミナルを再起動してシェル設定を反映してください:
 
 ```bash
 exec zsh
 ```
 
-## 検証
-
-以下のコマンドで設定が正しく適用されているか確認できます：
-
-### 1. 設定ファイルの確認
-
-```bash
-ls -la ~/.config/wezterm/
-ls -la ~/.config/zed/
-ls -la ~/.config/karabiner/
-ls -la ~/.config/mise/
-ls -la ~/.claude/
-```
-
-### 2. Homebrewパッケージの確認
-
-```bash
-which rg fd bat eza zoxide fzf delta jq yq gh mise
-```
-
-### 3. Git設定の確認
-
-```bash
-git config --global user.name
-git config --global user.email
-```
-
-### 4. macOS設定の確認
-
-```bash
-defaults read com.apple.dock autohide
-defaults read NSGlobalDomain KeyRepeat
-```
-
 ## 設定の更新
 
-dotfilesを変更した後は以下を実行：
+dotfiles を変更した後は:
 
 ```bash
 chezmoi apply
 ```
 
-変更内容を事前確認したい場合：
+差分を事前確認したい場合:
 
 ```bash
 chezmoi diff
 chezmoi apply
+```
+
+## 検証
+
+```bash
+# 設定ファイルの確認
+ls -la ~/.config/wezterm/ ~/.config/zed/ ~/.config/karabiner/ ~/.config/mise/ ~/.claude/
+
+# Homebrew パッケージの確認
+which rg fd bat eza zoxide fzf delta jq yq gh mise
+
+# Git 設定の確認
+git config --global user.name
+git config --global user.email
 ```
 
 ## トラブルシューティング
@@ -103,24 +78,18 @@ chezmoi apply
 ### chezmoi apply が失敗する
 
 ```bash
-# 詳細ログで実行
 chezmoi apply --verbose
-
-# 差分のみ確認
-chezmoi diff
 ```
 
-### Homebrewパッケージが足りない
+### Homebrew パッケージが足りない
 
-`.chezmoidata.yaml` の `brews` または `casks` にパッケージ名を追加し、再適用：
+`.chezmoidata.yaml` の `brews` または `casks` にパッケージ名を追加して再適用:
 
 ```bash
 chezmoi apply
 ```
 
-### Preztoが読み込まれない
-
-chezmoiが `.zprezto` をgit-repoとして取得していない場合：
+### Prezto が読み込まれない
 
 ```bash
 chezmoi update

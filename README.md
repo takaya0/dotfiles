@@ -49,25 +49,18 @@ dotfiles/                                    # chezmoi source directory
 
 ## 🚀 セットアップ
 
-### 新規セットアップ
+### 新規セットアップ（ワンライナー）
 
 ```bash
-cd ~/dotfiles
-./scripts/bootstrap.sh
+bash <(curl -fsSL https://raw.githubusercontent.com/takaya0/dotfiles/main/scripts/bootstrap.sh)
 ```
 
-### 手動セットアップ
+Xcode CLT → Homebrew → dotfiles clone → chezmoi → 設定適用 まで自動実行されます。
+
+### clone 済みの場合
 
 ```bash
-# Homebrewをインストール
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# chezmoiをインストール
-brew install chezmoi
-
-# chezmoiを初期化して適用
-chezmoi init --source=~/dotfiles
-chezmoi apply
+~/dotfiles/scripts/bootstrap.sh
 ```
 
 ## 🔄 設定の更新
