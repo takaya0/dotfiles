@@ -25,6 +25,12 @@ else
   echo "mise is already installed."
 fi
 
+# Activate mise and install all tools (ensures bun is available in this session)
+if command -v mise &>/dev/null; then
+  eval "$(mise activate bash)"
+  mise install --yes
+fi
+
 # Install Claude Code via native installer
 if ! command -v claude &>/dev/null; then
   echo "Installing Claude Code..."
