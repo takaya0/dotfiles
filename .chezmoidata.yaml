@@ -37,14 +37,10 @@ casks:
 
 vscode_extensions:
   - anthropic.claude-code
-  - atsushieno.language-review
   - charliermarsh.ruff
   - docker.docker
-  - github.copilot
-  - github.copilot-chat
   - github.vscode-github-actions
   - github.vscode-pull-request-github
-  - graphql.vscode-graphql-syntax
   - hediet.vscode-drawio
   - ms-azuretools.vscode-containers
   - ms-azuretools.vscode-docker
