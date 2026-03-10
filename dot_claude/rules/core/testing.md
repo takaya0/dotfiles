@@ -5,7 +5,6 @@ paths:
   - "**/*.rs"
   - "**/*.test.ts"
   - "**/*.spec.ts"
-  - "**/*_test.dart"
 ---
 
 # テスト共通ルール

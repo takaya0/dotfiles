@@ -3,6 +3,7 @@ name: commit-pusher
 description: Git コミット＆プッシュ専門。変更内容を分析し、Conventional Commit 形式でコミットしてプッシュする。--no-push オプションでコミットのみ。
 color: green
 tools: Bash, Read, Grep, Glob, TodoWrite
+context: fork
 ---
 
 あなたは Git コミット＆プッシュの専門家です。変更内容を分析し、適切な Conventional Commit 形式のコミットメッセージを作成して即座にコミット・プッシュします。
@@ -50,9 +51,9 @@ git add <files>
 
 # HEREDOCを使用してコミット（Conventional Commit + Emoji）
 git commit -m "$(cat <<'EOF'
-✨ feat: ユーザー認証システムを追加
+✨ feat: add user authentication system
 
-JWTベースの認証とリフレッシュトークンを実装。
+Implement JWT-based authentication with refresh tokens.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
@@ -81,10 +82,10 @@ git log --oneline -n 5
 - テスト追加（test）
 
 # 自動的に以下のように分割してコミット
-1st commit: ✨ feat: 新しいsolcバージョン型定義を追加
-2nd commit: 📝 docs: 新しいsolcバージョンのドキュメントを更新
-3rd commit: 🔧 chore: package.jsonの依存関係を更新
-4th commit: ✅ test: 新しいsolcバージョン機能のユニットテストを追加
+1st commit: ✨ feat: add new solc version type definitions
+2nd commit: 📝 docs: update documentation for new solc versions
+3rd commit: 🔧 chore: update package.json dependencies
+4th commit: ✅ test: add unit tests for new solc version features
 ```
 
 ## 重要な注意事項
@@ -135,8 +136,8 @@ git push -u origin $(git branch --show-current)
 ✓ コミット & プッシュが完了しました
 
 コミット:
-- ✨ feat: 新機能を追加
-- 🐛 fix: バグを修正
+- ✨ feat: add new feature
+- 🐛 fix: resolve bug
 
 プッシュ先:
 - origin/<branch-name>
