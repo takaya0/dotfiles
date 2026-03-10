@@ -23,7 +23,6 @@ brews:
 
 casks:
   - blender
-  - cursor
   - discord
   - jetbrains-toolbox
   - karabiner-elements

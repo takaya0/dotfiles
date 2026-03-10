@@ -46,10 +46,22 @@ chezmoi apply --verbose # エラー調査時
 ## アーキテクチャ上の重要ポイント
 
 - `dot_claude/` は `exact_` なし — `~/.claude/` にはランタイムデータ（セッション、キャッシュ等）が混在するため
-- `.chezmoiignore` に列挙されたファイル（README.md, INSTALL.md, scripts/, .cursor/, bin/, CLAUDE.md）はホームに展開されない
+- `dot_claude/` 配下の管理対象: `settings.json`、`rules/`（コーディングルール）、`agents/`、`skills/`
+- `.chezmoiignore` に列挙されたファイル（README.md, INSTALL.md, CLAUDE.md, scripts/, .cursor/）はホームに展開されない
 - Prezto は `.chezmoiexternal.toml` で `--recursive` git clone として管理
 - `run_onchange_install-packages.sh.tmpl` は Homebrew bundle の他に mise, Claude Code, Codex CLI もインストールする
 
 ## コミットメッセージ
 
-コミットメッセージは**日本語**で記述する（`.cursor/rules/commit-message-japanese.mdc` に基づく）。
+コミットメッセージは**日本語**で記述し、Conventional Commit 形式（絵文字付き）を使う（詳細: `dot_claude/rules/core/commit.md`）。
+
+例:
+```
+✨ feat: ユーザー認証機能を追加
+
+JWT ベースの認証を実装。
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
