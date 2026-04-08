@@ -20,6 +20,11 @@ brews:
   - yt-dlp
   - vim
   - chezmoi
+  - cmake
+  - cocoapods
+  - gcc
+  - googleworkspace-cli
+  - neovim
 
 casks:
   - blender
