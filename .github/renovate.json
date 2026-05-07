@@ -1,0 +1,18 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "enabledManagers": ["mise"],
+  "timezone": "Asia/Tokyo",
+  "schedule": ["* 0-9 * * 0,6"],
+  "ignoreTests": true,
+  "mise": {
+    "managerFilePatterns": ["dot_config/mise/config.toml"]
+  },
+  "packageRules": [
+    {
+      "matchManagers": ["mise"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "automerge": true
+    }
+  ]
+}
