@@ -2,10 +2,22 @@
 # chezmoi:template:left-delimiter="{{" right-delimiter="}}"
 set -euo pipefail
 
+# Cache sudo credentials up front so brew cask installs don't prompt repeatedly.
+# Keep the timestamp fresh in the background until this script exits.
+if sudo -v; then
+  ( while true; do
+      sudo -n true 2>/dev/null || exit
+      sleep 50
+      kill -0 "$$" 2>/dev/null || exit
+    done ) &
+  _sudo_keepalive_pid=$!
+  trap 'kill "$_sudo_keepalive_pid" 2>/dev/null || true' EXIT
+fi
+
 echo "Installing Homebrew packages..."
 
 # Generate Brewfile and run bundle
-brew bundle --file=- << 'EOF'
+brew bundle --verbose --file=- << 'EOF'
 {{- range .brews }}
 brew "{{ . }}"
 {{- end }}
