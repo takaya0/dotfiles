@@ -5,18 +5,26 @@
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "permissions": {
-    "deny": [
-      "NotebookEdit",
-      "Bash(sudo:*)",
-      "Read(**/*.env*)",
-      "Read(id_rsa)",
-      "Read(id_ed25519)",
-      "Read(**/*token*)",
-      "Read(**/*key*)",
-      "Write(**/*.env*)",
-      "Bash(wget:*)"
-    ]
-  },
+     "allow": [
+       "Read(/tmp/codex_*)",
+       "Write(/tmp/codex_*)",
+       "Bash(cat /tmp/codex_*)",
+       "Bash(rm -f /tmp/codex_*)",
+       "Bash(codex exec:*)",
+       "Bash(codex review:*)"
+     ],
+     "deny": [
+       "NotebookEdit",
+       "Bash(sudo:*)",
+       "Read(**/*.env*)",
+       "Read(id_rsa)",
+       "Read(id_ed25519)",
+       "Read(**/*token*)",
+       "Read(**/*key*)",
+       "Write(**/*.env*)",
+       "Bash(wget:*)"
+     ]
+   },
   "statusLine": {
     "type": "command",
     "command": "bunx ccusage statusline",
