@@ -11,6 +11,11 @@
   "packageRules": [
     {
       "matchManagers": ["mise"],
+      "matchPackageNames": ["java"],
+      "allowedVersions": "/^\\d+(\\.\\d+)*$/"
+    },
+    {
+      "matchManagers": ["mise"],
       "matchUpdateTypes": ["patch", "minor"],
       "automerge": true
     }
