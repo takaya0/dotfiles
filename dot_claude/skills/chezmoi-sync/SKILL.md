@@ -50,12 +50,51 @@ chezmoi diff
 
 ### Step 3: ユーザーに同期方向を確認
 
-ファイルごとに AskUserQuestion で同期方向を確認する。関連するファイルはまとめて1つの質問にしてよい。
+変更があるファイルごとに AskUserQuestion で同期方向を確認する。AskUserQuestion は最大4問まで同時に送れるため、差分ファイルが多い場合は4ファイルずつバッチで質問する。
 
-選択肢：
-- **ホーム → ソース**: ホームの内容をソースに取り込む
-- **ソース → ホーム**: ソースの内容をホームに適用する
-- **スキップ**: このファイルは変更しない
+各質問には以下を含める：
+- header: ファイル名（短縮形、例: `mise/config`）
+- question: 差分の要約と git 履歴の参考情報を含めた説明。ユーザーが判断できる十分な情報を提供する
+- options: 以下の3択
+
+```
+options:
+  - label: "ホーム側を採用"
+    description: "ホームの内容をソース（dotfiles）に取り込む（chezmoi re-add）"
+  - label: "ソース側を採用"
+    description: "ソースの内容をホームに適用する（chezmoi apply）"
+  - label: "スキップ"
+    description: "このファイルは変更しない"
+```
+
+例：
+
+```javascript
+AskUserQuestion({
+  questions: [
+    {
+      question: "~/.config/mise/config.toml に差分があります。\n\nホーム: node=\"24.15.0\", ruby=\"4.0.3\"\nソース: node=\"24.16.0\", ruby=\"4.0.5\"\n\ngit履歴: Renovate PRでバージョン更新済み（#13, #15）",
+      header: "mise/config",
+      options: [
+        { label: "ホーム側を採用", description: "ホームの内容をソースに取り込む" },
+        { label: "ソース側を採用", description: "ソースの内容をホームに適用する" },
+        { label: "スキップ", description: "このファイルは変更しない" }
+      ],
+      multiSelect: false
+    },
+    {
+      question: "~/.claude/settings.json に差分があります。\n\nホーム: codex パーミッション /tmp/codex/、warp プラグインあり\nソース: codex パーミッション /tmp/codex_*、warp プラグインなし\n\ngit履歴: 27af1a7 で更新",
+      header: "claude/settings",
+      options: [
+        { label: "ホーム側を採用", description: "ホームの内容をソースに取り込む" },
+        { label: "ソース側を採用", description: "ソースの内容をホームに適用する" },
+        { label: "スキップ", description: "このファイルは変更しない" }
+      ],
+      multiSelect: false
+    }
+  ]
+})
+```
 
 ### Step 4: 同期の実行
 
