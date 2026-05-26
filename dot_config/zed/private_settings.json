@@ -7,12 +7,22 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "proxy": "",
+  "agent_servers": {
+    "claude-acp": {
+      "type": "registry"
+    },
+    "codex-acp": {
+      "type": "registry"
+    }
+  },
+  "edit_predictions": {
+    "allow_data_collection": "no",
+    "provider": "zed"
+  },
   "autosave": "on_focus_change",
   "search": {
     "regex": true
-  },
-  "features": {
-    "edit_prediction_provider": "zed"
   },
   "telemetry": {
     "metrics": false
@@ -22,7 +32,7 @@
   "theme": {
     "mode": "system",
     "light": "One Light",
-    "dark": "Tokyo Night Moon"
+    "dark": "Nightfox - opaque"
   },
   "lsp": {
     "biome": {

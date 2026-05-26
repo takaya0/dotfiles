@@ -40,17 +40,17 @@ EOF
 
 ```bash
 # ✅ 一時ファイルに書いて stdin 経由で渡す
-cat > /tmp/codex_prompt.txt <<'EOF'
+cat > /tmp/codex/prompt.txt <<'EOF'
 複数行のプロンプト
 ...
 EOF
 
-cat /tmp/codex_prompt.txt | codex exec --skip-git-repo-check --sandbox read-only -C <repo_dir> -
+cat /tmp/codex/prompt.txt | codex exec --skip-git-repo-check --sandbox read-only -C <repo_dir> -
 ```
 
 ポイント：
 - 末尾の `-` が「stdin から読む」の明示。引数解析と stdin の両方にフォールバックさせない
-- `Write` ツールで `/tmp/codex_prompt.txt` を作るのが確実（heredoc ネストの罠を回避）
+- `Write` ツールで `/tmp/codex/prompt.txt` を作るのが確実（heredoc ネストの罠を回避）
 
 ### 2. 必須オプション
 

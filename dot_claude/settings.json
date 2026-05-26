@@ -6,12 +6,12 @@
   },
   "permissions": {
      "allow": [
-       "Read(/tmp/codex_*)",
-       "Write(/tmp/codex_*)",
-       "Bash(cat /tmp/codex_*)",
-       "Bash(rm -f /tmp/codex_*)",
-       "Bash(codex exec:*)",
-       "Bash(codex review:*)"
+       "Read(/tmp/codex/)",
+       "Write(/tmp/codex/)",
+       "Bash(cat /tmp/codex/prompt.txt)",
+       "Bash(rm -f /tmp/codex/prompt.txt)",
+       "Bash(codex exec *)",
+       "Bash(codex review *)"
      ],
      "deny": [
        "NotebookEdit",
@@ -37,7 +37,8 @@
     "gopls-lsp@claude-plugins-official": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
-    "clangd-lsp@claude-plugins-official": true
+    "clangd-lsp@claude-plugins-official": true,
+    "warp@claude-code-warp": true
   },
   "extraKnownMarketplaces": {
     "anthropic-agent-skills": {
@@ -50,6 +51,12 @@
       "source": {
         "source": "github",
         "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "claude-code-warp": {
+      "source": {
+        "source": "github",
+        "repo": "warpdotdev/claude-code-warp"
       }
     }
   },
