@@ -8,6 +8,7 @@
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
   "proxy": "",
+  "unnecessary_code_fade": 0.6,
   "agent_servers": {
     "claude-acp": {
       "type": "registry"
