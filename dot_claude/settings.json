@@ -5,40 +5,71 @@
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "permissions": {
-     "allow": [
-       "Read(/tmp/codex/)",
-       "Write(/tmp/codex/)",
-       "Bash(cat /tmp/codex/prompt.txt)",
-       "Bash(rm -f /tmp/codex/prompt.txt)",
-       "Bash(codex exec *)",
-       "Bash(codex review *)"
-     ],
-     "deny": [
-       "NotebookEdit",
-       "Bash(sudo:*)",
-       "Read(**/*.env*)",
-       "Read(id_rsa)",
-       "Read(id_ed25519)",
-       "Read(**/*token*)",
-       "Read(**/*key*)",
-       "Write(**/*.env*)",
-       "Bash(wget:*)"
-     ]
-   },
+    "allow": [
+      "Read(/tmp/codex/**)",
+      "Write(/tmp/codex/**)",
+      "Read(/private/tmp/codex/**)",
+      "Write(/private/tmp/codex/**)",
+      "Bash(cat /tmp/codex/*)",
+      "Bash(rm -f /tmp/codex/*)",
+      "Bash(tee /tmp/codex/*)",
+      "Bash(mkdir -p /tmp/codex*)",
+      "Bash(codex exec *)",
+      "Bash(codex review *)",
+      "Bash(pgrep *)",
+      "Bash(sleep *)",
+      "Bash(echo *)"
+    ],
+    "deny": [
+      "NotebookEdit",
+      "Bash(sudo:*)",
+      "Read(**/*.env*)",
+      "Read(id_rsa)",
+      "Read(id_ed25519)",
+      "Read(**/*token*)",
+      "Read(**/*key*)",
+      "Write(**/*.env*)",
+      "Bash(wget:*)"
+    ],
+    "additionalDirectories": [
+      "/tmp/codex",
+      "/private/tmp/codex"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // \"\"'); case \"$f\" in /tmp/codex/*|/private/tmp/codex/*) printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"allow\",\"permissionDecisionReason\":\"codex scratch\"}}' ;; esac"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "c=$(jq -r '.tool_input.command // \"\"'); case \"$c\" in \"cat /tmp/codex/\"*|\"rm -f /tmp/codex/\"*|\"tee /tmp/codex/\"*|\"mkdir -p /tmp/codex\"*|\"codex exec \"*|\"codex review \"*|\"pgrep \"*|\"sleep \"*|\"echo \"*) printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"allow\",\"permissionDecisionReason\":\"codex flow\"}}' ;; esac"
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "bunx ccusage statusline",
     "padding": 0
   },
   "enabledPlugins": {
-    "frontend-design@claude-code-plugins": true,
     "example-skills@anthropic-agent-skills": true,
     "code-simplifier@claude-plugins-official": true,
     "gopls-lsp@claude-plugins-official": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
-    "clangd-lsp@claude-plugins-official": true,
-    "warp@claude-code-warp": true
+    "clangd-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "anthropic-agent-skills": {
@@ -64,6 +95,8 @@
   "effortLevel": "xhigh",
   "advisorModel": "opus",
   "autoUpdatesChannel": "latest",
+  "skipWorkflowUsageWarning": true,
   "preferredNotifChannel": "ghostty",
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "tui": "fullscreen"
 }
