@@ -1,13 +1,24 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
-  "enabledManagers": ["mise"],
+  "enabledManagers": ["mise", "custom.regex"],
   "timezone": "Asia/Tokyo",
   "schedule": ["* 0-9 * * 0,6"],
   "ignoreTests": true,
   "mise": {
     "managerFilePatterns": ["dot_config/mise/config.toml"]
   },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["dot_config/mise/config.toml"],
+      "matchStrings": ["min_version\\s*=\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "mise",
+      "packageNameTemplate": "jdx/mise",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    }
+  ],
   "packageRules": [
     {
       "matchManagers": ["mise"],
@@ -15,7 +26,7 @@
       "allowedVersions": "/^\\d+(\\.\\d+)*$/"
     },
     {
-      "matchManagers": ["mise"],
+      "matchManagers": ["mise", "custom.regex"],
       "matchUpdateTypes": ["patch", "minor"],
       "automerge": true
     }
