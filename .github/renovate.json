@@ -17,6 +17,14 @@
       "packageNameTemplate": "jdx/mise",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["dot_config/mise/config.toml"],
+      "matchStrings": ["gcloud\\s*=\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "gcloud",
+      "packageNameTemplate": "google/cloud-sdk",
+      "datasourceTemplate": "docker"
     }
   ],
   "packageRules": [
@@ -24,6 +32,16 @@
       "matchManagers": ["mise"],
       "matchPackageNames": ["java"],
       "allowedVersions": "/^\\d+(\\.\\d+)*$/"
+    },
+    {
+      "matchManagers": ["custom.regex"],
+      "matchDepNames": ["gcloud"],
+      "allowedVersions": "/^\\d+\\.\\d+\\.\\d+$/"
+    },
+    {
+      "matchManagers": ["custom.regex"],
+      "matchDepNames": ["gcloud"],
+      "automerge": true
     },
     {
       "matchManagers": ["mise", "custom.regex"],
