@@ -25,13 +25,21 @@
       "depNameTemplate": "gcloud",
       "packageNameTemplate": "google/cloud-sdk",
       "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["dot_config/mise/config.toml"],
+      "matchStrings": ["java\\s*=\\s*\"temurin-(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "java",
+      "packageNameTemplate": "java-jdk",
+      "datasourceTemplate": "java-version"
     }
   ],
   "packageRules": [
     {
       "matchManagers": ["mise"],
-      "matchPackageNames": ["java"],
-      "allowedVersions": "/^\\d+(\\.\\d+)*$/"
+      "matchDepNames": ["java"],
+      "enabled": false
     },
     {
       "matchManagers": ["custom.regex"],
@@ -47,6 +55,11 @@
       "matchManagers": ["mise", "custom.regex"],
       "matchUpdateTypes": ["patch", "minor"],
       "automerge": true
+    },
+    {
+      "matchManagers": ["custom.regex"],
+      "matchDepNames": ["java"],
+      "automerge": false
     }
   ]
 }
