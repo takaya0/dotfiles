@@ -1,4 +1,4 @@
-min_version = "2026.8.10"
+min_version = "2026.8.14"
 
 [tools]
 bun = "1.4.0"
