@@ -7,7 +7,7 @@ node = "24.21.0"
 python = "3.15.0"
 ruby = "4.0.7"
 terraform = "1.16.5"
-gcloud = "587.0.0"
+gcloud = "588.0.0"
 
 [settings]
 experimental = true
