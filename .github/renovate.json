@@ -6,12 +6,12 @@
   "schedule": ["* 0-9 * * 0,6"],
   "ignoreTests": true,
   "mise": {
-    "managerFilePatterns": ["dot_config/mise/config.toml"]
+    "managerFilePatterns": ["home/dot-config/mise/config.toml"]
   },
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": ["dot_config/mise/config.toml"],
+      "managerFilePatterns": ["home/dot-config/mise/config.toml"],
       "matchStrings": ["min_version\\s*=\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "mise",
       "packageNameTemplate": "jdx/mise",
@@ -20,7 +20,7 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["dot_config/mise/config.toml"],
+      "managerFilePatterns": ["home/dot-config/mise/config.toml"],
       "matchStrings": ["gcloud\\s*=\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "gcloud",
       "packageNameTemplate": "google/cloud-sdk",
@@ -28,7 +28,7 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["dot_config/mise/config.toml"],
+      "managerFilePatterns": ["home/dot-config/mise/config.toml"],
       "matchStrings": ["java\\s*=\\s*\"temurin-(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "java",
       "packageNameTemplate": "java-jdk",
