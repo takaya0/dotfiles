@@ -45,7 +45,7 @@ cat > /tmp/codex/<slug>.prompt.md <<'EOF'
 ...
 EOF
 
-cat /tmp/codex/<slug>.prompt.md | codex exec --skip-git-repo-check --sandbox read-only -C <repo_dir> -
+cat /tmp/codex/<slug>.prompt.md | codex exec --skip-git-repo-check --sandbox read-only -c 'model_reasoning_effort="high"' -C <repo_dir> -
 ```
 
 ポイント：
@@ -57,12 +57,29 @@ cat /tmp/codex/<slug>.prompt.md | codex exec --skip-git-repo-check --sandbox rea
 
 | オプション | 役割 | いつ使うか |
 |------|------|------|
+| `-c 'model_reasoning_effort="high"'` | 推論の深さ（reasoning effort）を指定 | **常に付ける**。未指定だと `~/.codex/config.toml` の設定を継承する（→ 次節） |
 | `--skip-git-repo-check` | カレントディレクトリが git リポジトリでなくても起動 | 常に付ける（安全側） |
-| `--sandbox read-only` | コマンド実行を読み取り専用に制限 | レビュー・相談用途では常に付ける |
-| `-C <repo_dir>` | 作業ディレクトリを指定 | リポジトリ内のファイルを参照させたい時は必須 |
+| `--sandbox read-only` | コマンド実行を読み取り専用に制限 | レビュー・相談用途では常に付ける（`codex exec` のみ。`codex review` は下記参照） |
+| `-C <repo_dir>` | 作業ディレクトリを指定 | リポジトリ内のファイルを参照させたい時は必須（`codex exec` のみ） |
 | `-m <model>` | モデル指定 | 必要に応じて（デフォルトで OK） |
 
 書き込みが必要な相談（codex に編集させたい）の場合のみ `--sandbox workspace-write` を使う。デフォルトは read-only。
+
+**クォート形式はシングルクォートで囲む**（`-c 'model_reasoning_effort="high"'`）。`-c model_reasoning_effort="high"` だとシェルが二重引用符を剥がして CLI には `model_reasoning_effort=high` が渡る。Codex は TOML パース失敗時にリテラル文字列として扱うため実際には動くが、公式例の TOML 値形式に合わせておくほうが堅い。
+
+### 2-1. reasoning effort の使い分け
+
+`~/.codex/config.toml` の `model_reasoning_effort` がグローバル既定として効くため、**明示しないとその値（現状 `xhigh`）を継承して極端に遅くなる**。スキル経由の呼び出しでは常に明示すること。`-c` はインボケーション単位の上書きなので、対話モード（ユーザーが `! codex` で直接叩く運用）の設定には影響しない。
+
+| effort | 使う場面 |
+|------|------|
+| `high`（**既定**） | プランレビュー / コードレビュー / 設計相談 / 調査結論のセカンドオピニオン |
+| `medium` | 1 行で答えられる短い質問、軽い事実確認 |
+| `xhigh` / `max` / `ultra` | **通常使わない。ユーザーが明示的に要求した場合のみ** |
+
+有効な effort 値は**モデル依存**。現在サポートされる値は `codex debug models --bundled` の `supported_reasoning_levels` で確認できる（例: `gpt-5.6-sol` は `low` / `medium` / `high` / `xhigh` / `max` / `ultra`）。`high` / `medium` はどのモデルでも概ね利用可能。
+
+実効値の確認方法は「トラブルシューティング」の末尾を参照。
 
 ### 3. 必ずバックグラウンド実行する
 
@@ -70,7 +87,7 @@ cat /tmp/codex/<slug>.prompt.md | codex exec --skip-git-repo-check --sandbox rea
 
 ```bash
 # Bash ツールで run_in_background: true 指定 + 出力を slug ごとの tee で保存
-cat /tmp/codex/<slug>.prompt.md | codex exec --skip-git-repo-check --sandbox read-only -C /path/to/repo - 2>&1 | tee /tmp/codex/<slug>.output.txt
+cat /tmp/codex/<slug>.prompt.md | codex exec --skip-git-repo-check --sandbox read-only -c 'model_reasoning_effort="high"' -C /path/to/repo - 2>&1 | tee /tmp/codex/<slug>.output.txt
 ```
 
 **完了監視は `run_in_background` のタスク完了通知に一本化する**（単発・並列とも同じ）：
@@ -81,38 +98,49 @@ cat /tmp/codex/<slug>.prompt.md | codex exec --skip-git-repo-check --sandbox rea
 
 ### codex review（git 差分レビュー）
 
+**`codex review` は `-C` / `--sandbox` / `--skip-git-repo-check` を受け付けない**（付けると `error: unexpected argument` で起動失敗する）。そのため:
+
+- **作業ディレクトリ**: 対象リポジトリ内で実行する（別ディレクトリを明示したい場合は後述の `codex exec ... review` 形式）
+- **サンドボックス**: `--sandbox` が使えないため、放置すると `config.toml` の `sandbox_mode`（現状 `workspace-write` + ネットワーク有効）を継承してしまう。レビュー用途では **`-c 'sandbox_mode="read-only"'` で明示的に読み取り専用に落とす**
+
 ```bash
 # ステージされた変更をレビュー
-codex review --uncommitted
+codex review --uncommitted -c 'model_reasoning_effort="high"' -c 'sandbox_mode="read-only"'
 
 # 特定のブランチとの差分をレビュー
-codex review --base main
+codex review --base main -c 'model_reasoning_effort="high"' -c 'sandbox_mode="read-only"'
 
 # 特定のコミットをレビュー
-codex review --commit <SHA>
+codex review --commit <SHA> -c 'model_reasoning_effort="high"' -c 'sandbox_mode="read-only"'
 
 # カスタム指示でレビュー（短い指示なら位置引数 OK）
-codex review "セキュリティの観点でレビューして"
+codex review "セキュリティの観点でレビューして" -c 'model_reasoning_effort="high"' -c 'sandbox_mode="read-only"'
 ```
 
 長いカスタム指示は `codex exec` と同様に stdin 経由で渡す。出力も slug ごとに tee する：
 
 ```bash
-cat /tmp/codex/<slug>.prompt.md | codex review --uncommitted - 2>&1 | tee /tmp/codex/<slug>.output.txt
+cat /tmp/codex/<slug>.prompt.md | codex review --uncommitted -c 'model_reasoning_effort="high"' -c 'sandbox_mode="read-only"' - 2>&1 | tee /tmp/codex/<slug>.output.txt
+```
+
+別ディレクトリのリポジトリをレビューする場合は `codex exec` のサブコマンド形式を使う（こちらは `-C` が効く）：
+
+```bash
+codex exec -C /path/to/repo review --uncommitted -c 'model_reasoning_effort="high"' -c 'sandbox_mode="read-only"'
 ```
 
 ### codex exec（非対話レビュー・相談）
 
-短い 1 行の質問のみ位置引数で OK：
+短い 1 行の質問のみ位置引数で OK。軽い質問なので effort は `medium`：
 
 ```bash
-codex exec --skip-git-repo-check --sandbox read-only "Go の sync.Map と通常の map+Mutex の使い分けは？"
+codex exec --skip-git-repo-check --sandbox read-only -c 'model_reasoning_effort="medium"' "Go の sync.Map と通常の map+Mutex の使い分けは？"
 ```
 
-それ以外（複数行、コードを含む、プランレビュー等）は必ず stdin 経由：
+それ以外（複数行、コードを含む、プランレビュー等）は必ず stdin 経由。effort は既定の `high`：
 
 ```bash
-cat /tmp/codex/<slug>.prompt.md | codex exec --skip-git-repo-check --sandbox read-only -C /path/to/repo -
+cat /tmp/codex/<slug>.prompt.md | codex exec --skip-git-repo-check --sandbox read-only -c 'model_reasoning_effort="high"' -C /path/to/repo -
 ```
 
 ### codex（対話モード）
@@ -127,7 +155,7 @@ cat /tmp/codex/<slug>.prompt.md | codex exec --skip-git-repo-check --sandbox rea
 2. プロンプトを `Write` ツールで `/tmp/codex/<slug>.prompt.md` に書き出す
    - レビュー対象ファイル・ディレクトリのパスをプロンプト内に明記
    - 「最終的に承認／条件付き承認／却下のいずれかを判定してください」等の出力形式指示を含める
-3. `cat /tmp/codex/<slug>.prompt.md | codex exec --skip-git-repo-check --sandbox read-only -C <repo_dir> - 2>&1 | tee /tmp/codex/<slug>.output.txt` を `run_in_background: true` で実行
+3. `cat /tmp/codex/<slug>.prompt.md | codex exec --skip-git-repo-check --sandbox read-only -c 'model_reasoning_effort="high"' -C <repo_dir> - 2>&1 | tee /tmp/codex/<slug>.output.txt` を `run_in_background: true` で実行
 4. そのタスクの完了通知を待つ（pgrep ループは使わない）
 5. 完了したら `/tmp/codex/<slug>.output.txt` を Read で読み、ユーザーに要約 + 重要箇所の引用を報告
 6. 報告完了後、`rm -f /tmp/codex/<slug>.*` で当該レビューの一時ファイルを削除する（次回実行時に古い出力と混同しないため。他の slug には触れない）
@@ -138,7 +166,7 @@ cat /tmp/codex/<slug>.prompt.md | codex exec --skip-git-repo-check --sandbox rea
 ユーザー: 「このプランをcodexでレビューして」
 → slug を決める（例: plan-review）
 → Write で /tmp/codex/plan-review.prompt.md に「プランファイルのパス + レビュー観点 + 出力形式」を書き出す
-→ cat /tmp/codex/plan-review.prompt.md | codex exec --skip-git-repo-check --sandbox read-only -C <repo> - 2>&1 | tee /tmp/codex/plan-review.output.txt を run_in_background で実行
+→ cat /tmp/codex/plan-review.prompt.md | codex exec --skip-git-repo-check --sandbox read-only -c 'model_reasoning_effort="high"' -C <repo> - 2>&1 | tee /tmp/codex/plan-review.output.txt を run_in_background で実行
 → タスクの完了通知を待つ
 → /tmp/codex/plan-review.output.txt を Read してユーザーに要約報告
 → rm -f /tmp/codex/plan-review.* で一時ファイルを削除
@@ -148,8 +176,8 @@ cat /tmp/codex/<slug>.prompt.md | codex exec --skip-git-repo-check --sandbox rea
 
 ```
 ユーザー: 「Echo の middleware ordering で気をつけるべきことを codex に聞いて」
-→ codex exec --skip-git-repo-check --sandbox read-only "Echo v5 で middleware ordering で起こりがちなバグと対処" を直接実行
-→ 1 行の短いプロンプトなら位置引数で OK
+→ codex exec --skip-git-repo-check --sandbox read-only -c 'model_reasoning_effort="medium"' "Echo v5 で middleware ordering で起こりがちなバグと対処" を直接実行
+→ 1 行の短いプロンプトなら位置引数で OK。軽い質問なので effort は medium
 ```
 
 ### 例 3: 現在のリポジトリでの差分レビュー
@@ -157,7 +185,8 @@ cat /tmp/codex/<slug>.prompt.md | codex exec --skip-git-repo-check --sandbox rea
 ```
 ユーザー: 「いまの変更を codex でレビューして」
 → slug を決める（例: uncommitted-review）
-→ codex review --uncommitted -C /path/to/repo 2>&1 | tee /tmp/codex/uncommitted-review.output.txt を run_in_background で実行
+→ 対象リポジトリ内で codex review --uncommitted -c 'model_reasoning_effort="high"' -c 'sandbox_mode="read-only"' 2>&1 | tee /tmp/codex/uncommitted-review.output.txt を run_in_background で実行
+   （codex review は -C を受け付けない。別ディレクトリなら codex exec -C <repo> review ... 形式）
 → タスクの完了通知を待つ
 → /tmp/codex/uncommitted-review.output.txt を要約して報告
 → rm -f /tmp/codex/uncommitted-review.* で削除
@@ -173,9 +202,9 @@ cat /tmp/codex/<slug>.prompt.md | codex exec --skip-git-repo-check --sandbox rea
 
    ```bash
    # レビュー A（run_in_background: true）
-   cat /tmp/codex/sentry-foundation.prompt.md | codex exec --skip-git-repo-check --sandbox read-only -C <repo> - 2>&1 | tee /tmp/codex/sentry-foundation.output.txt
+   cat /tmp/codex/sentry-foundation.prompt.md | codex exec --skip-git-repo-check --sandbox read-only -c 'model_reasoning_effort="high"' -C <repo> - 2>&1 | tee /tmp/codex/sentry-foundation.output.txt
    # レビュー B（別の run_in_background: true）
-   cat /tmp/codex/auth-refactor.prompt.md | codex exec --skip-git-repo-check --sandbox read-only -C <repo> - 2>&1 | tee /tmp/codex/auth-refactor.output.txt
+   cat /tmp/codex/auth-refactor.prompt.md | codex exec --skip-git-repo-check --sandbox read-only -c 'model_reasoning_effort="high"' -C <repo> - 2>&1 | tee /tmp/codex/auth-refactor.output.txt
    ```
 
 4. **タスクごとの完了通知**を受けるたびに、その slug の `/tmp/codex/<slug>.output.txt` を Read し、どのレビューの結果かを明示してユーザーに報告（終わった順に 1 件ずつ処理してよい）
@@ -196,7 +225,7 @@ cat /tmp/codex/<slug>.prompt.md | codex exec --skip-git-repo-check --sandbox rea
 **対処**:
 1. `pkill -f "codex exec"` で停止（※並列実行中は他のレビューも巻き込むので注意。単発時のみ安全）
 2. プロンプトを `Write` で `/tmp/codex/<slug>.prompt.md` に書き出す
-3. `cat /tmp/codex/<slug>.prompt.md | codex exec ... -` で再実行
+3. `cat /tmp/codex/<slug>.prompt.md | codex exec ... -c 'model_reasoning_effort="high"' -` で再実行
 
 ### 症状: codex コマンドが見つからない
 
@@ -216,17 +245,39 @@ codex login
 
 ユーザーに `! codex login` の入力を促す（インタラクティブ）。
 
-### 症状: タイムアウト
+### 症状: レビューが極端に遅い / タイムアウト
 
-- プロンプトを簡潔にして再実行
-- `--model` を軽量モデルに変更
-- バックグラウンドのタイムアウトを延長（Bash ツールなら `timeout: 600000` まで指定可）
+1. **`-c 'model_reasoning_effort=...'` が付いているか確認**。未指定だと `~/.codex/config.toml` の設定（現状 `xhigh`）を継承して非常に遅くなる。これが最頻の原因
+2. effort を `medium` に下げて再実行
+3. プロンプトを簡潔にして再実行
+4. `--model` を軽量モデルに変更
+5. バックグラウンドのタイムアウトを延長（Bash ツールなら `timeout: 600000` まで指定可）
+
+### 実効 reasoning effort の確認方法
+
+`codex exec` / `codex review` は起動時ヘッダに実効値を出力する。`head` で打ち切れば **API 応答を待たずに** 確認できるので確認コストはほぼゼロ：
+
+```bash
+echo "hi" | codex exec --skip-git-repo-check --sandbox read-only -c 'model_reasoning_effort="medium"' - 2>&1 | head -9
+# → "reasoning effort: medium" と表示されれば OK（"sandbox:" 行も同時に確認できる）
+```
+
+注意: **不正な値はエラーにならず素通りする**（`-c 'model_reasoning_effort="bogus"'` は `reasoning effort: bogus` として起動してしまう）。`--strict-config` もキー名しか検証しないため、値の確認はこのヘッダ目視で行う。
+
+事後確認したい場合は rollout ログからも読める：
+
+```bash
+newest=$(find ~/.codex/sessions -name "*.jsonl" -print0 | xargs -0 ls -t | head -1)
+grep -o '"effort":"[a-z]*"' "$newest" | sort -u
+```
 
 ## アンチパターン
 
 - ❌ 複数行プロンプトを `"$(cat <<EOF...EOF)"` で位置引数に渡す（ハング）
 - ❌ `codex exec` を foreground 実行して数分間ブロックする
-- ❌ `--sandbox` 指定なしで実行（書き込みリスクあり）
+- ❌ `-c 'model_reasoning_effort=...'` を付けずに実行する（`config.toml` のグローバル既定を継承する。そこが高い effort だとレビューが不必要に長時間化する）
+- ❌ `--sandbox` 指定なしで実行（書き込みリスクあり）。`codex review` は `--sandbox` 自体が使えないので `-c 'sandbox_mode="read-only"'` で代替する
+- ❌ `codex review` に `-C` / `--sandbox` / `--skip-git-repo-check` を渡す（`error: unexpected argument` で起動失敗）
 - ❌ `-C` なしで他リポジトリのファイルを参照させようとする
 - ❌ 出力を `tee` で保存せず stdout に流すだけ（バックグラウンドで結果が消える）
 - ❌ 並列レビューで同じファイル名（固定 `prompt.txt` / `output.txt`）を使い回す（上書き・出力混在）。レビューごとに一意な `<slug>` を使う
