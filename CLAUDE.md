@@ -4,56 +4,54 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 概要
 
-chezmoi + Homebrew で macOS 環境を管理する dotfiles リポジトリ。`~/dotfiles` が chezmoi の sourceDir として直接使われる。
+mise bootstrap で macOS 環境を管理する dotfiles リポジトリ。`~/dotfiles` に clone して使う（設定内で `~/dotfiles/home` を絶対パスで参照している）。
 
 ## よく使うコマンド
 
 ```bash
-chezmoi apply           # 設定を適用（変更後は必ずこれを実行）
-chezmoi diff            # 適用前に差分を確認
-chezmoi apply --dry-run # 変更をシミュレート（実際には適用しない）
-chezmoi update          # 外部リポジトリ（Prezto）を更新
-chezmoi apply --verbose # エラー調査時
+mise bootstrap            # すべて適用（dotfiles / repos / packages / macOS defaults / tools / 追加セットアップ）
+mise bootstrap --dry-run  # 変更をシミュレート（実際には適用しない）
+mise bootstrap status     # 各パートの状態を確認
+mise dot apply            # dotfiles だけ適用
+mise dot status           # dotfiles の状態を確認
+mise dot add --changed    # copy で配置したファイルのアプリ側の変更をリポジトリに取り込む
 ```
 
-## chezmoi 命名規則
+`mise bootstrap` はカレントディレクトリの `mise.toml` の `[bootstrap]` も合わせて適用するため、他プロジェクトの外（`~` など）で実行する。
 
-| プレフィックス/サフィックス | 意味 |
+## 構成
+
+| パス | 役割 |
 |---|---|
-| `dot_` | ホームディレクトリに `.` として展開（例: `dot_zshrc` → `~/.zshrc`） |
-| `.tmpl` | Go テンプレートとして処理される（展開後は .tmpl なし） |
-| `run_onchange_*.tmpl` | テンプレートの出力内容が変わった場合のみ実行されるスクリプト |
-| `run_once_after_*` | `chezmoi apply` で一度だけ実行されるスクリプト |
-| `exact_` | ディレクトリ内の管理外ファイルを削除（`dot_claude/` には **使わない** — ランタイムデータが消えるため） |
+| `home/` | `~` に展開されるファイル。`dot-xxx` は `.xxx` になる（`dot_prefix = true`） |
+| `home/dot-config/mise/conf.d/bootstrap.toml` | mise bootstrap の定義（dotfiles / repos / packages / macOS defaults / tasks） |
+| `home/dot-config/mise/config.toml` | 言語ランタイム（`[tools]`）。Renovate が更新する |
+| `scripts/bootstrap.sh` | 新規マシン用の初回セットアップ |
+| `scripts/post-bootstrap.sh` | `[tasks.bootstrap]` から毎回実行される追加セットアップ（冪等にする） |
+| `scripts/vscode-extensions.txt` | VS Code 拡張リスト |
+
+## dotfiles の配置ルール
+
+- `home/` 配下は `symlink-each` で 1 ファイルずつ symlink される。`~` 側の管理外ファイルは残る（`~/.claude/` のランタイムデータ等）
+- `manifest = "git"` のため、**`git add` したファイルだけ**が配置される
+- アプリ自身が書き換えるファイル（Karabiner / Zed / VS Code / Cursor の設定、`~/.claude/settings.json`）は `exclude` して個別に `mode = "copy"` で配置する。新たにそういうファイルを追加するときは両方に書く
+- `~/.config/karabiner` は 0700、`~/.config/zed/settings.json` は 0600 を `permissions` で指定している
 
 ## パッケージ管理
 
-| カテゴリ | 設定ファイル |
+| カテゴリ | 設定場所 |
 |---|---|
-| CLIツール (brews) | `.chezmoidata.yaml` の `brews:` リスト |
-| GUIアプリ (casks) | `.chezmoidata.yaml` の `casks:` リスト |
-| VS Code / Cursor 拡張 | `.chezmoidata.yaml` の `vscode_extensions:` リスト |
-| 言語ランタイム | `dot_config/mise/config.toml` |
+| CLIツール | `bootstrap.toml` の `[bootstrap.packages]` に `"brew:<name>" = "latest"` |
+| GUIアプリ | `bootstrap.toml` の `[bootstrap.packages]` に `"brew-cask:<name>" = "latest"` |
+| 言語ランタイム | `home/dot-config/mise/config.toml` の `[tools]` |
+| VS Code 拡張 | `scripts/vscode-extensions.txt` |
+| Claude Code / Rust / Codex CLI | `scripts/post-bootstrap.sh` |
 
-パッケージを追加する手順: `.chezmoidata.yaml` を編集 → `chezmoi apply`（`run_onchange_install-packages.sh.tmpl` が自動実行される）
-
-## テンプレートデータ
-
-- **`.chezmoi.toml.tmpl`**: `{{ .name }}`（yataka）、`{{ .email }}`（ytk.koizumi@gmail.com）
-- **`.chezmoidata.yaml`**: `{{ .brews }}`、`{{ .casks }}`、`{{ .vscode_extensions }}`
-- **組み込み変数**: `{{ .chezmoi.homeDir }}` など
-
-## アーキテクチャ上の重要ポイント
-
-- `dot_claude/` は `exact_` なし — `~/.claude/` にはランタイムデータ（セッション、キャッシュ等）が混在するため
-- `dot_claude/` 配下の管理対象: `settings.json`、`rules/`（コーディングルール）、`agents/`、`skills/`
-- `.chezmoiignore` に列挙されたファイル（README.md, INSTALL.md, CLAUDE.md, scripts/, .cursor/）はホームに展開されない
-- Prezto は `.chezmoiexternal.toml` で `--recursive` git clone として管理
-- `run_onchange_install-packages.sh.tmpl` は Homebrew bundle の他に mise, Claude Code, Codex CLI もインストールする
+パッケージを追加する手順: `bootstrap.toml` を編集 → `mise bootstrap packages apply`
 
 ## コミットメッセージ
 
-コミットメッセージは**日本語**で記述し、Conventional Commit 形式（絵文字付き）を使う（詳細: `dot_claude/rules/core/commit.md`）。
+コミットメッセージは**日本語**で記述し、Conventional Commit 形式（絵文字付き）を使う（詳細: `home/dot-claude/rules/core/commit.md`）。
 
 例:
 ```

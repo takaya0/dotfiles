@@ -1,6 +1,3 @@
-# chezmoi binary (installed by get.chezmoi.io)
-bin/
-
 # macOS
 .DS_Store
 .AppleDouble

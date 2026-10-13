@@ -38,8 +38,7 @@
   },
   "skillOverrides": {
     "utility-drawio": "off",
-    "utility-creating-rules": "off",
-    "chezmoi-sync": "off"
+    "utility-creating-rules": "off"
   },
   "hooks": {
     "PreToolUse": [
