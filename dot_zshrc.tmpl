@@ -22,3 +22,9 @@ fi
 
 # Custom PATH additions
 export PATH="$HOME/.bun/bin:$PATH"
+
+# sentry
+fpath=("{{ .chezmoi.homeDir }}/.local/share/zsh/site-functions" $fpath)
+
+# Unity CLI
+. "{{ .chezmoi.homeDir }}/.unity/env"
