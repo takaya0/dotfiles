@@ -7,11 +7,10 @@
   "permissions": {
     "allow": [
       "Read(/tmp/codex/**)",
-      "Write(/tmp/codex/**)",
+      "Edit(/tmp/codex/**)",
       "Read(/private/tmp/codex/**)",
-      "Write(/private/tmp/codex/**)",
+      "Edit(/private/tmp/codex/**)",
       "Bash(cat /tmp/codex/*)",
-      "Bash(rm -f /tmp/codex/*)",
       "Bash(tee /tmp/codex/*)",
       "Bash(mkdir -p /tmp/codex*)",
       "Bash(codex exec *)",
@@ -28,13 +27,19 @@
       "Read(id_ed25519)",
       "Read(**/*token*)",
       "Read(**/*key*)",
-      "Write(**/*.env*)",
+      "Edit(**/*.env*)",
       "Bash(wget:*)"
     ],
+    "defaultMode": "auto",
     "additionalDirectories": [
       "/tmp/codex",
       "/private/tmp/codex"
     ]
+  },
+  "skillOverrides": {
+    "utility-drawio": "off",
+    "utility-creating-rules": "off",
+    "chezmoi-sync": "off"
   },
   "hooks": {
     "PreToolUse": [
@@ -55,6 +60,15 @@
             "command": "c=$(jq -r '.tool_input.command // \"\"'); case \"$c\" in \"cat /tmp/codex/\"*|\"rm -f /tmp/codex/\"*|\"tee /tmp/codex/\"*|\"mkdir -p /tmp/codex\"*|\"codex exec \"*|\"codex review \"*|\"pgrep \"*|\"sleep \"*|\"echo \"*) printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"allow\",\"permissionDecisionReason\":\"codex flow\"}}' ;; esac"
           }
         ]
+      },
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -z \"$(find /private/tmp/codex /tmp/codex -type f -mmin -120 2>/dev/null | head -1)\" ]; then printf '{\"systemMessage\":\"⚠ codex レビューの実行痕跡が見つかりません（/tmp/codex に直近2時間の成果物なし）\",\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"注意: このセッションで codex レビューの実行痕跡（/tmp/codex の直近2時間の成果物）がありません。非自明なプランであれば、~/.claude/rules/core/plan-review.md に従い ExitPlanMode の前に utility-codex スキルでレビューを受けてください。自明な小変更ならこのまま進めて構いません。\"}}'; fi"
+          }
+        ]
       }
     ]
   },
@@ -65,11 +79,11 @@
   },
   "enabledPlugins": {
     "example-skills@anthropic-agent-skills": true,
-    "code-simplifier@claude-plugins-official": true,
-    "gopls-lsp@claude-plugins-official": true,
-    "rust-analyzer-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "clangd-lsp@claude-plugins-official": true
+    "code-simplifier@claude-plugins-official": false,
+    "gopls-lsp@claude-plugins-official": false,
+    "rust-analyzer-lsp@claude-plugins-official": false,
+    "typescript-lsp@claude-plugins-official": false,
+    "clangd-lsp@claude-plugins-official": false
   },
   "extraKnownMarketplaces": {
     "anthropic-agent-skills": {
@@ -92,11 +106,36 @@
     }
   },
   "language": "Japanese",
-  "effortLevel": "xhigh",
-  "advisorModel": "opus",
+  "effortLevel": "high",
+  "modelSettings": {
+    "claude-opus-5": {
+      "effortLevel": "high"
+    },
+    "claude-fable-5-1": {
+      "effortLevel": "xhigh"
+    }
+  },
   "autoUpdatesChannel": "latest",
+  "tui": "fullscreen",
   "skipWorkflowUsageWarning": true,
   "preferredNotifChannel": "ghostty",
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
-  "tui": "fullscreen"
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "Bash(mise run dev-up:*)",
+      "Bash(mise run dev-down:*)",
+      "Bash(mise run e2e:*)",
+      "Bash(mise run doctor)",
+      "Bash(golangci-lint run:*)"
+    ],
+    "soft_deny": [
+      "$defaults",
+      "Bash(mise run db-migrate-up:*) in production context",
+      "Bash(dotenvx encrypt -f *dotenvx/.env.prod*)",
+      "Bash(git push origin main:*)"
+    ]
+  }
 }
