@@ -11,3 +11,4 @@ gcloud = "588.0.0"
 
 [settings]
 experimental = true
+auto_update = true
